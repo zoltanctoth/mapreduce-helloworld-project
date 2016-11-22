@@ -1,4 +1,5 @@
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
@@ -46,21 +47,29 @@ public class MapReduceApp {
     }
 
     public static void main(String[] args) throws Exception {
+        org.apache.log4j.BasicConfigurator.configure();
+
+        FileSystem fs = FileSystem.get(new Configuration());
+        try {
+            fs.delete(new Path("output"), true);
+        } catch (Exception e){
+
+        }
         Configuration conf = new Configuration();
-        Job job = Job.getInstance(conf, "word count");
+        Job job = Job.getInstance(conf, "MapReduceApp");
         job.setJarByClass(MapReduceApp.class);
         job.setMapperClass(MyMapper.class);
         job.setReducerClass(MyReducer.class);
         job.setOutputKeyClass(Text.class);
         job.setOutputValueClass(IntWritable.class);
         FileInputFormat.addInputPath(job, new Path("input"));
-        FileOutputFormat.setOutputPath(job, new Path("output" + new Random().nextInt(1000000)));
+        FileOutputFormat.setOutputPath(job, new Path("output"));
         Boolean r = job.waitForCompletion(true);
 
         if (r) {
-            System.out.println("YAY, you are set up! :)");
+            System.out.println("Success! :)");
         } else {
-            System.err.println("Oh no, something went wrong, hopefully you see a meaningful error message.");
+            System.err.println("Oh no!.");
         }
     }
 }
